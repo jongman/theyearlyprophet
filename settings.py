@@ -8,6 +8,9 @@ DISQUS_SITENAME = "theyearlyprophet"
 PDF_GENERATOR = False
 DEFAULT_PAGINATION = 5
 WITH_PAGINATION = True
+TIMEZONE = "America/Chicago"
+
+MD_EXTENSIONS = ('codehilite(force_linenos=False)', 'extra')
 
 FEED_RSS = 'feeds/rss.xml'
 FEED_MAX_ITEMS = 20

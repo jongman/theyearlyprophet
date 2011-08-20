@@ -5,9 +5,9 @@
 }
 .codehilitetable pre { font-family: "Dejavu Sans Mono", "Consolas", "NanumGothicCoding", "Monospace" !important; }
 .codehilitetable td.code { text-align: left !important; }
-.codehilitetable td.linenos { width: 32px; }
+.codehilitetable td.linenos { display: none;}
 .codehilitetable td { line-height: 160%; }
-.codehilitetable td.code pre { padding-left: 3px; }
+.codehilitetable td.code pre { padding: 0 8px; }
 .hll { background-color: #ffffcc }
 .c { color: #808080 } /* Comment */
 .err { color: #F00000; background-color: #F0A0A0 } /* Error */

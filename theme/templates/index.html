@@ -5,11 +5,11 @@
 		{% endblock %}
 		{% for article in articles_page.object_list %}        
 			<article>
-				<header> <h2 class="entry-title"><a href="{{ SITE_URL }}/{{ article.url }}" rel="bookmark" title="Permalink to {{ article.title}}">{{ article.title }}</a></h2> </header>
+				<header> <h2 class="entry-title"><a href="{{ SITE_URL }}/{{ article.url }}" rel="bookmark" title="Permalink to {{ article.title }}">{{ article.title }}</a></h2> </header>
+				<div class="entry-content"> {{ article.summary }} </div><!-- /.entry-content -->
 				<footer class="post-info">
 					<abbr class="published" title="{{ article.date.isoformat() }}"> {{ article.locale_date }} </abbr>
 				</footer><!-- /.post-info -->
-				<div class="entry-content"> {{ article.summary }} </div><!-- /.entry-content -->
 			</article>
 		{% endfor %}
 		<p class="paginator">

@@ -211,21 +211,40 @@ td { vertical-align: top; }
    Author: JMK
    ========================================================================== */
 
-body input textarea select {
+/* 광역 속성들 */
+body, input, textarea, select {
 	font-family: NanumGothic, MalgunGothic, Sans, Gulim;
+	font-size: 15px;
 }
 
+a, a:visited, a:active {
+	text-decoration: none;
+	color: #AE432E;
+}
 
+a:hover {
+	color: #2E43AE;
+}
+/* 모든 페이지에 존재하는 엘레멘트들 */
 
+section#body {
+	width: 100%;
+}
 
+section#navigation header {
+	font-size: 24px;
+	font-family: Serif, Times;
+	text-align: center;
+}
 
+section#navigation nav {
+	text-align: center;
+}
 
-
-
-
-
-
-
+section#navigation nav ul li {
+	display: inline;
+	margin: 0px 8px;
+}
 
 
 
@@ -267,8 +286,17 @@ body input textarea select {
 
 }
 
-@media only screen and (min-width: 768px) {
+@media only screen and (min-width: 900px) {
   /* Style adjustments for viewports 768px and over go here */
+	section#body {
+		width: 800px;
+		margin: 0 auto;
+		border-radius: 8px;		
+		padding: 0;
+	}
+
+	section#body > section {
+	}
 
 }
 

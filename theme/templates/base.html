@@ -12,7 +12,7 @@
 	More info: h5bp.com/b/378 -->
 	<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
 
-	<title>{% block title %}{{ SITENAME }}{% endblock %}</title>
+	<title>{% block title %}Home{% endblock %} -- {{ SITENAME }}</title>
 	<meta name="description" content="전산학과 프로그래밍에 관한 블로그">
 	<meta name="author" content="JMK">
 
@@ -23,7 +23,7 @@
 
 	<!-- CSS: implied media=all -->
 	<!-- CSS concatenated and minified via ant build script-->
-	<link rel="stylesheet" href="css/style.css">
+	<link rel="stylesheet" href="{{ SITEURL }}/theme/css/style.css">
 	<!-- end CSS-->
 
 	<!-- More ideas for your <head> here: h5bp.com/d/head-Tips -->
@@ -31,65 +31,76 @@
 		<!-- All JavaScript at the bottom, except for Modernizr / Respond.
 		Modernizr enables HTML5 elements & feature detects; Respond is a polyfill for min/max-width CSS3 Media Queries
 		For optimal performance, use a custom Modernizr build: www.modernizr.com/download/ -->
-		<script src="js/libs/modernizr-2.0.6.min.js"></script>
+		<script src="{{ SITEURL }}/theme/js/libs/modernizr-2.0.6.min.js"></script>
 	</head>
 
 	<body>
-		<section id="navigation">
-			<header id="banner">
-				<h1><a href="{{ SITEURL }}">{{ SITENAME }} <strong>{{ SITESUBTITLE }}</strong></a></h1>
-			</header>
-			<nav>
-				{% if categories %}
-				<ul>
-					{% for category, articles in categories %}
-					<li>
-						<a href="{{ SITEURL }}/category/{{category}}.html">{{ category }}</a>
-					</li> 
-					{% endfor %}
-				{% endif %}
-			</nav>
-		</section> 
-		<section class="main">
+		<section id="body">
+			<section id="navigation">
+				<header>
+					<h1>
+						<a href="{{ SITEURL }}">{{ SITENAME }}</a>:
+						{{ self.title() }} 
+					</h1>
+				</header>
+				<nav>
+					<ul>
+						{% if pages %}
+							{% for page in pages %}
+								<li>
+									<a href="{{ SITEURL }}/pages/{{ page.url }}">{{ page.title }}</a>
+								</li>
+								<li>
+									|
+								</li>
+							{% endfor %}
+						{% endif %}
+						{% for category, articles in categories %}
+						<li>
+							<a href="{{ SITEURL }}/category/{{category}}.html">{{ category }}</a>
+						</li> 
+						{% endfor %}
+					</ul>
+				</nav>
+			</section> 
 			{% block content %}
 			{% endblock %}
+			<!-- <section id="footer"> -->
+			<!-- 	<footer> -->
+			<!-- 		<address id="about" class="vcard body"> -->
+			<!-- 			some wording about license, and contact -->
+			<!-- 		</address> -->
+			<!-- 	</footer> -->
+			<!-- </section> -->
+
+			<!-- JavaScript at the bottom for fast page loading -->
+
+			<!-- Grab Google CDN's jQuery, with a protocol relative URL; fall back to local if offline -->
+			<script src="//ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
+			<script>window.jQuery || document.write('<script src="{{ SITEURL }}/theme/js/libs/jquery-1.6.2.min.js"><\/script>')</script>
+
+
+			<!-- scripts concatenated and minified via ant build script-->
+			<script defer src="{{ SITEURL }}/theme/js/plugins.js"></script>
+			<script defer src="{{ SITEURL }}/theme/js/script.js"></script>
+			<!-- end scripts-->
+
+
+			<!-- Change UA-XXXXX-X to be your site's ID -->
+			<script>
+				window._gaq = [['_setAccount','UAXXXXXXXX1'],['_trackPageview'],['_trackPageLoadTime']];
+				Modernizr.load({
+					load: ('https:' == location.protocol ? '//ssl' : '//www') + '.google-analytics.com/ga.js'
+				});
+			</script>
+
+
+			<!-- Prompt IE 6 users to install Chrome Frame. Remove this if you want to support IE 6.
+			chromium.org/developers/how-tos/chrome-frame-getting-started -->
+			<!--[if lt IE 7 ]>
+			<script src="//ajax.googleapis.com/ajax/libs/chrome-frame/1.0.3/CFInstall.min.js"></script>
+			<script>window.attachEvent('onload',function(){CFInstall.check({mode:'overlay'})})</script>
+			<![endif]-->
 		</section>
-		<section id="footer">
-			<footer>
-				<address id="about" class="vcard body">
-					hello there
-				</address>
-			</footer>
-		</section>
-
-		<!-- JavaScript at the bottom for fast page loading -->
-
-		<!-- Grab Google CDN's jQuery, with a protocol relative URL; fall back to local if offline -->
-		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.6.2/jquery.min.js"></script>
-		<script>window.jQuery || document.write('<script src="js/libs/jquery-1.6.2.min.js"><\/script>')</script>
-
-
-		<!-- scripts concatenated and minified via ant build script-->
-		<script defer src="js/plugins.js"></script>
-		<script defer src="js/script.js"></script>
-		<!-- end scripts-->
-
-
-		<!-- Change UA-XXXXX-X to be your site's ID -->
-		<script>
-			window._gaq = [['_setAccount','UAXXXXXXXX1'],['_trackPageview'],['_trackPageLoadTime']];
-			Modernizr.load({
-				load: ('https:' == location.protocol ? '//ssl' : '//www') + '.google-analytics.com/ga.js'
-			});
-		</script>
-
-
-		<!-- Prompt IE 6 users to install Chrome Frame. Remove this if you want to support IE 6.
-		chromium.org/developers/how-tos/chrome-frame-getting-started -->
-		<!--[if lt IE 7 ]>
-		<script src="//ajax.googleapis.com/ajax/libs/chrome-frame/1.0.3/CFInstall.min.js"></script>
-		<script>window.attachEvent('onload',function(){CFInstall.check({mode:'overlay'})})</script>
-		<![endif]-->
-
 	</body>
 </html>

@@ -2,6 +2,7 @@
 AUTHOR = u'JongMan'
 SITENAME = u"The Yearly Prophet"
 SITEURL = 'http://blog.andromeda-express.com'
+LOCALE = "ko_KR.utf8"
 
 DISQUS_SITENAME = "theyearlyprophet"
 PDF_GENERATOR = False

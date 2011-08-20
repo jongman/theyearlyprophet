@@ -6,3 +6,7 @@ def build():
 def watch():
     local("pelican contents -s settings.py -t theme -r")
 
+def publish():
+    build()
+    local("cd output && s3cmd sync * s3://theyearlyprophet/")
+

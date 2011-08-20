@@ -1,6 +1,6 @@
 Slug: solving-all-sudoku-puzzles 
 Category: 알고리즘
-Title: 스도쿠 문제 전부 풀기
+Title: [번역] 스도쿠 문제 전부 풀기
 
 이 글은 [Peter Norvig](http://norvig.com/) 이 쓴 [Solving Every Sudoku Puzzle](http://norvig.com/sudoku.html) 을 번역한 것이다. 번역상의 오탈자는 [번역자](mailto:theyearlyprophet@gmail.com) 에게 신고 바란다.
 

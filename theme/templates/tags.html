@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}태그 목록{%endblock%}
+{% block content %}
+<article class="tags">
+	<ul>
+		{% for tag, articles in tags %}
+		<li>
+			<a href="{{ SITE_URL }}/{{ tag }}.html">{{ tag }}</a>
+		</li>
+		{% endfor %}
+	</ul>
+</article>
+{% endblock %}
+

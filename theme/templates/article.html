@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block content %}        
+	<section class="article">
+		<article>
+			<h2 class="entry-title"><a href="{{ article.url }}" rel="bookmark" title="Permalink to {{ article.title}}">{{ article.title }}</a></h2> 
+			<div class="post-info">
+				<abbr class="published" title="{{ article.date.isoformat() }}">
+					{{ article.locale_date }}
+				</abbr>
+			</div>
+			<div class="entry-content">
+				{{ article.content }}
+			</div>
+		</article>
+	</section>
+{% endblock %}

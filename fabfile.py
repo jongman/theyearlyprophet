@@ -8,5 +8,5 @@ def watch():
 
 def publish():
     build()
-    local("cd output && s3cmd sync * s3://theyearlyprophet/")
+    local("cd output && s3cmd sync * s3://theyearlyprophet.com/")
 

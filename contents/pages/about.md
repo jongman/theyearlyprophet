@@ -1,5 +1,5 @@
 Slug: about
-Title: About 
+Title: 소개
 
 딱히 주제를 정해놓고 쓰지 않는 블로그.
 

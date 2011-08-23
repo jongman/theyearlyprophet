@@ -1,6 +1,7 @@
 Slug: solving-all-sudoku-puzzles 
 Category: 알고리즘
 Title: 번역: 스도쿠 문제 전부 풀기
+Date: 2011-08-20
 
 블로그를 개장한 기념으로 과거에 번역한 적이 있던 에세이를 올려본다.
 

@@ -211,81 +211,92 @@ Status: draft
 
 두 테스트 셋 모두에서 훨씬 좋은 성적을 내며 결과적으로는 정확도가 80-90%까지 올라가는 것을 볼 수 있다. 따라서 더 좋은 언어 모델이 있다면 우리의 정확도 목표에 도달할 수도 있다는 결론을 얻을 수 있다. 물론 이것이 너무 낙관적인 결과일 수도 있다. 더 많은 단어를 아는 언어 모델을 만들다 보면 더 많은 오답 후보를 추가하게 되는데, 우리의 테스트에서는 그런 효과를 고려하지 않았기 때문이다.
 
-모르는 단어를 해결하는 다른 방법은 
+모르는 단어를 해결하는 다른 방법은 모르는 단어도 'correct'의 결과로 반환할 수 있도록 하는 것이다. 만약에 원래 입력이 'electroencephalographicallz'였다면, 이 단어를 모르더라도 비교적 그럴 듯한 교정 결과는 마지막의 z를 y로 바꾼 'electroencephalographically'일 것이다. 단어의 음절이나 접미사(-ally 같은)에 대해 알고 있는 언어 모델을 만든다면 이런 문제를 해결할 수도 있을 것이다. 더 쉬운 방법으로는 인접한 2글자, 3글자, 4글자 부분 문자열들에 대한 통계를 갖고 있는 언어 모델을 만들 수도 있다.
 
-On both test sets we get significant gains, approaching 80-90%. This suggests that it is possible that if we had a good enough language model we might get to our accuracy goal. On the other hand, this is probably optimistic, because as we build a bigger language model we would also introduce words that are the wrong answer, which this method does not do.
+다음으로 오류 모델 P(w|c)를 살펴보자. 지금까지 오류 모델은 별 것 없었다. 편집 거리가 작으면 작을 수록 오류가 작았기 때문이다. 오류 모델 때문에 생긴 다음 오답들을 살펴보자.
 
-Another way to deal with unknown words is to allow the result of correct to be a word we have not seen. For example, if the input is "electroencephalographicallz", a good correction would be to change the final "z" to an "y", even though "electroencephalographically" is not in our dictionary. We could achieve this with a language model based on components of words: perhaps on syllables or suffixes (such as "-ally"), but it is far easier to base it on sequences of characters: 2-, 3- and 4-letter sequences.
+첫 번째로, 정답이 편집 거리 2인데 편집 거리 1인 답을 반환한 경우:
+	
+	#!python
+	correct('reciet') => 'recite' (5); expected 'receipt' (14)
+	correct('adres') => 'acres' (37); expected 'address' (77)
+	correct('rember') => 'member' (51); expected 'remember' (162)
+	correct('juse') => 'just' (768); expected 'juice' (6)
+	correct('accesing') => 'acceding' (2); expected 'assessing' (1)
 
-P(w|c), the error model. So far, the error model has been trivial: the smaller the edit distance, the smaller the error. This causes some problems, as the examples below show. First, some cases where correct returns a word at edit distance 1 when it should return one at edit distance 2:
-correct('reciet') => 'recite' (5); expected 'receipt' (14)
-correct('adres') => 'acres' (37); expected 'address' (77)
-correct('rember') => 'member' (51); expected 'remember' (162)
-correct('juse') => 'just' (768); expected 'juice' (6)
-correct('accesing') => 'acceding' (2); expected 'assessing' (1)
-Here, for example, the alteration of 'd' to 'c' to get from 'adres' to 'acres' should count more than the sum of the two changes 'd' to 'dd' and 's' to 'ss'.
+두 번째 예를 보면, 'adres'에서 'acres'로 가기 위해 d를 c로 바꾸는 연산 하나는 'd'를 'dd'로 만들고 's'를 'ss'로 만드는 두 연산보다 비용이 높았어야 할 것이다.
 
-Also, some cases where we choose the wrong word at the same edit distance:
+두 번째로, 정답과 오답의 편집 거리가 같은 경우를 살펴보자.
 
-correct('thay') => 'that' (12513); expected 'they' (4939)
-correct('cleark') => 'clear' (234); expected 'clerk' (26)
-correct('wer') => 'her' (5285); expected 'were' (4290)
-correct('bonas') => 'bones' (263); expected 'bonus' (3)
-correct('plesent') => 'present' (330); expected 'pleasant' (97)
-The same type of lesson holds: In 'thay', changing an 'a' to an 'e' should count as a smaller change than changing a 'y' to a 't'. How much smaller? It must be a least a factor of 2.5 to overcome the prior probability advantage of 'that' over 'they'.
+	#!python
+	correct('thay') => 'that' (12513); expected 'they' (4939)
+	correct('cleark') => 'clear' (234); expected 'clerk' (26)
+	correct('wer') => 'her' (5285); expected 'were' (4290)
+	correct('bonas') => 'bones' (263); expected 'bonus' (3)
+	correct('plesent') => 'present' (330); expected 'pleasant' (97)
 
-Clearly we could use a better model of the cost of edits. We could use our intuition to assign lower costs for doubling letters and changing a vowel to another vowel (as compared to an arbitrary letter change), but it seems better to gather data: to get a corpus of spelling errors, and count how likely it is to make each insertion, deletion, or alteration, given the surrounding characters. We need a lot of data to do this well. If we want to look at the change of one character for another, given a window of two characters on each side, that's 266, which is over 300 million characters. You'd want several examples of each, on average, so we need at least a billion characters of correction data; probably safer with at least 10 billion.
+같은 결론을 얻을 수 있다. 'thay'에서 'a'를 'e'로 바꾸는 연산은 'y'를 't'로 바꾸는 연산보다 비용이 작아야 할 것이다. 얼마나 작아야 할까? 'that'이 'they'보다 훨씬 많이 출현하기 때문에, 2.5배는 더 작아야 한다.
 
-Note there is a connection between the language model and the error model. The current program has such a simple error model (all edit distance 1 words before any edit distance 2 words) that it handicaps the language model: we are afraid to add obscure words to the model, because if one of those obscure words happens to be edit distance 1 from an input word, then it will be chosen, even if there is a very common word at edit distance 2. With a better error model we can be more aggressive about adding obscure words to the dictionary. Here are some examples where the presence of obscure words in the dictionary hurts us:
+편집 거리에서 각 연산의 비용을 좀 더 잘 정하면 좋겠다는 결론을 얻을 수 있다. 이런 직관을 이용해 같은 글자를 추가하거나 모음에 모음을 추가하는 연산의 가중치를 다른 연산보다 인위적으로 낮추는 식으로 모델을 튜닝할 수 있지만, 데이터를 모으는 것이 더 좋을 것이다. 철자 오류 코퍼스를 모으고, 인접한 글자들에 대해 삽입, 변경, 삭제, 뒤집기의 각 편집 연산이 얼마나 자주 출현하는지 확인하는 것이다. 이것을 제대로 하기 위해서는 지나치게 많은 데이터가 필요하다. 왼쪽에 있는 두 글자가 무엇인지, 오른쪽에 있는 두 글자가 무엇인지를 경우의 수에 넣으면 이미 26<sup>6</sup>개의 경우의 수가 나오는데 이것은 3억이 넘는 수이다. 각 경우가 얼마나 자주 출현하는지 보려면 각 경우에 최소 몇 개의 샘플은 봐야 하니까, 대략 10억개, 더 안전하게는 100억개의 자료가 있어야 이런 결과를 얻을 수 있다. 
 
-correct('wonted') => 'wonted' (2); expected 'wanted' (214)
-correct('planed') => 'planed' (2); expected 'planned' (16)
-correct('forth') => 'forth' (83); expected 'fourth' (79)
-correct('et') => 'et' (20); expected 'set' (325)
-The enumeration of possible corrections, argmaxc. Our program enumerates all corrections within edit distance 2. In the development set, only 3 words out of 270 are beyond edit distance 2, but in the final test set, there were 23 out of 400. Here they are:
-purple perpul
-curtains courtens
-minutes muinets
+이 때 언어 모델과 오류 모델이 서로 얽혀 있다는 점에 유의하자. 지금 우리 프로그램의 오류 모델은 너무 단순하기 때문에 우리가 언어 모델에 문서를 더 추가하는 것을 방해한다 (편집 거리 2인 정답이 있을 때, 너무 많은 희귀 단어를 추가하다가 집 거리 1인 오답이 추가되면 우리 프로그램은 항상 오답을 반환할 것이다). 좀 더 나은 오류 모델이 있다면 희귀 단어를 좀 더 적극적으로 사전에 추가할 수 있을 것이다. 현재 프로그램에서 희귀 단어가 문제되는 다음 경우들을 보자.
 
-successful sucssuful
-hierarchy heiarky
-profession preffeson
-weighted wagted
-inefficient ineffiect
-availability avaiblity
-thermawear thermawhere
-nature natior
-dissension desention
-unnecessarily unessasarily
-disappointing dissapoiting
-acquaintances aquantences
-thoughts thorts
-criticism citisum
-immediately imidatly
-necessary necasery
-necessary nessasary
-necessary nessisary
-unnecessary unessessay
-night nite
-minutes muiuets
-assessing accesing
-necessitates nessisitates
-We could consider extending the model by allowing a limited set of edits at edit distance 3. For example, allowing only the insertion of a vowel next to another vowel, or the replacement of a vowel for another vowel, or replacing close consonants like "c" to "s" would handle almost all these cases.
+	#!python
+	correct('wonted') => 'wonted' (2); expected 'wanted' (214)
+	correct('planed') => 'planed' (2); expected 'planned' (16)
+	correct('forth') => 'forth' (83); expected 'fourth' (79)
+	correct('et') => 'et' (20); expected 'set' (325)
 
-There's actually a fourth (and best) way to improve: change the interface to correct to look at more context. So far, correct only looks at one word at a time. It turns out that in many cases it is difficult to make a decision based only on a single word. This is most obvious when there is a word that appears in the dictionary, but the test set says it should be corrected to another word anyway:
-correct('where') => 'where' (123); expected 'were' (452)
-correct('latter') => 'latter' (11); expected 'later' (116)
-correct('advice') => 'advice' (64); expected 'advise' (20)
-We can't possibly know that correct('where') should be 'were' in at least one case, but should remain 'where' in other cases. But if the query had been correct('They where going') then it seems likely that "where" should be corrected to "were".
+세 번째로 모든 가능성을 검사하는 부분인 argmaxc 를 살펴보자. 우리 프로그램은 원문과 편집 거리 2 이하인 후보들을 모두 생성한다. 실제로 개발 셋에서는 270개 중 3개만이 원문과 편집 거리 2가 넘게 떨어져 있었지만, 최종 테스트 셋에서는 400개 중 23개나 있다. 다음이 그 목록이다.
 
-The context of the surrounding words can help when there are obvious errors, but two or more good candidate corrections. Consider:
+	purple perpul
+	curtains courtens
+	minutes muinets
+	successful sucssuful
+	hierarchy heiarky
+	profession preffeson
+	weighted wagted
+	inefficient ineffiect
+	availability avaiblity
+	thermawear thermawhere
+	nature natior
+	dissension desention
+	unnecessarily unessasarily
+	disappointing dissapoiting
+	acquaintances aquantences
+	thoughts thorts
+	criticism citisum
+	immediately imidatly
+	necessary necasery
+	necessary nessasary
+	necessary nessisary
+	unnecessary unessessay
+	night nite
+	minutes muiuets
+	assessing accesing
+	necessitates nessisitates
 
-correct('hown') => 'how' (1316); expected 'shown' (114)
-correct('ther') => 'the' (81031); expected 'their' (3956)
-correct('quies') => 'quiet' (119); expected 'queries' (1)
-correct('natior') => 'nation' (170); expected 'nature' (171)
-correct('thear') => 'their' (3956); expected 'there' (4973)
-correct('carrers') => 'carriers' (7); expected 'careers' (2)
+일부 연산을 이용해 편집 거리 3인 후보들을 만들 수 있도록 함으로써 이 문제를 해결할 수도 있다. 예를 들어 편집 거리 3인 후보들을 만들 때는 모음 옆에 모음을 삽입하거나, 모음을 교체하거나, 'c'를 's'로 바꾸는 등의 그럴 듯한 연산만을 허용하는 것이다. 그러면 이 케이스들을 대부분 처리할 수 있을 것이다.
+
+마지막으로, 정확도를 올리기 위한 이들보다 더 좋은 방법이 있다. `correct`가 단어 하나만을 입력받는 것이 아니라, 더 많은 문맥에 대한 정보를 받아들일 수 있도록 하는 것이다. 많은 경우 단어 하나만을 가지고는 어느 것이 정답이어야 할지 알기 힘들다. 오타로 입력된 원문이 사전에 이미 존재하는 경우가 좋은 예이다.
+
+	#!python
+	correct('where') => 'where' (123); expected 'were' (452)
+	correct('latter') => 'latter' (11); expected 'later' (116)
+	correct('advice') => 'advice' (64); expected 'advise' (20)
+
+단어만 보고 `correct('where')`가 언제 'where'이고 언제 'were'이어야 할 거라고 어떻게 알 수 있겠는가? 하지만 입력이 `correct('They where going')` 과 같은 형태였다면 'were'가 정답일 거라고 더 쉽게 예상할 수 있을 것이다.
+
+인접한 단어들은 두 개 이상의 그럴 듯한 후보 중 답을 결정할 때도 유용하다. 다음 예를 보자.
+
+	#!python
+	correct('hown') => 'how' (1316); expected 'shown' (114)
+	correct('ther') => 'the' (81031); expected 'their' (3956)
+	correct('quies') => 'quiet' (119); expected 'queries' (1)
+	correct('natior') => 'nation' (170); expected 'nature' (171)
+	correct('thear') => 'their' (3956); expected 'there' (4973)
+	correct('carrers') => 'carriers' (7); expected 'careers' (2)
+	
 Why should 'thear' be corrected as 'there' rather than 'their'? It is difficult to tell by the single word alone, but if the query were correct('There's no there thear') it would be clear.
 
 To build a model that looks at multiple words at a time, we will need a lot of data. Fortunately, Google has released a database of word counts for all sequences up to five words long, gathered from a corpus of a trillion words.

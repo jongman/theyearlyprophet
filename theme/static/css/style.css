@@ -229,8 +229,8 @@ a:hover {
 /* 모든 페이지에 존재하는 엘레멘트들 */
 
 section#body {
-	width: 100%;
-	margin: 8px;
+	width: 95%;
+	margin: 0 auto;
 }
 
 section#navigation header {
@@ -247,7 +247,6 @@ section#navigation nav ul li {
 	display: inline;
 	margin: 0px 8px;
 }
-
 
 
 /* ==|== non-semantic helper classes ========================================
@@ -294,7 +293,6 @@ section#navigation nav ul li {
 		width: 800px;
 		margin: 0 auto;
 		border-radius: 8px;		
-		padding: 0;
 	}
 
 	section#body > section {

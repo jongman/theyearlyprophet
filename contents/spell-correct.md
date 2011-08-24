@@ -131,7 +131,7 @@ Status: draft
 
 	def correct(word):
 		candidates = known([word]) or known(edits1(word)) or known_edits2(word) or [word]
-		return max(candidates, key=lambda w: NWORDS[w])
+		return max(candidates, key=NWORDS.get)
 
 `correct` 함수는 주어진 입력 `word`에서 편집 거리가 가장 가까운 알려진 단어들의 목록을 `candidates`에 저장한다. 그 후에는 `NWORDS` 모델에 의해 알려진 대로 P(c)가 가장 큰 단어를 반환한다.
 
@@ -167,41 +167,52 @@ Status: draft
 	print spelltest(tests1)
 	print spelltest(tests2) ## only do this after everything is debugged
 
-This gives the following output:
+수행해 보면 다음과 같은 결과를 얻을 수 있다.
 
-{'bad': 68, 'bias': None, 'unknown': 15, 'secs': 16, 'pct': 74, 'n': 270}
-{'bad': 130, 'bias': None, 'unknown': 43, 'secs': 26, 'pct': 67, 'n': 400}
+	#!python
+	{'bad': 68, 'bias': None, 'unknown': 15, 'secs': 16, 'pct': 74, 'n': 270}
+	{'bad': 130, 'bias': None, 'unknown': 43, 'secs': 26, 'pct': 67, 'n': 400}
 
-So on the development set of 270 cases, we get 74% correct in 13 seconds (a rate of 17 Hz), and on the final test set we get 67% correct (at 15 Hz).
+270개의 개발용 테스트 셋을 처리하는 데는 13초가 걸렸으며 (초당 17개) 74%의 정확도를 얻었고, 최종 테스트 셋에서는 초당 15개의 입력을 처리하며 67%의 정확도를 얻었음을 볼 수 있다.
 
-Update: In the original version of this essay I incorrectly reported a higher score on both test sets, due to a bug. The bug was subtle, but I should have caught it, and I apologize for misleading those who read the earlier version. In the original version of spelltest, I left out the if bias: in the fourth line of the function (and the default value was bias=0, not bias=None). I figured that when bias = 0, the statement NWORDS[target] += bias would have no effect. In fact it does not change the value of NWORDS[target], but it does have an effect: it makes (target in NWORDS) true. So in effect the spelltest routine was cheating by making all the unknown words known. This was a humbling error, and I have to admit that much as I like defaultdict for the brevity it adds to programs, I think I would not have had this bug if I had used regular dicts.
-Update 2: defaultdict strikes again. Darius Bacon pointed out that in the function correct, I had accessed NWORDS[w]. This has the unfortunate side-effect of adding w to the defaultdict, if w was not already there (i.e., if it was an unknown word). Then the next time, it would be present, and we would get the wrong answer. Darius correctly suggested changing to NWORDS.get. (This works because max(None, i) is i for any integer i.)
+**업데이트**: 이 에세이의 첫 버전에서는 코드의 버그로 인해 두 테스트 셋 모두에서 원래보다 높은 점수를 기록했다. 까다로운 버그기는 했지만 잡기 불가능한 것은 아니었으며, 잘못된 버전을 읽은 독자에게 사과한다. `spelltest` 함수의 첫 버전에서는 `bias`가 존재하는지 확인하는 `if`문이 없었다 (그리고 초기값이 `None`이 아니라 0이었다). 나는 `bias=0` 일 경우, `NWORDS[target] += bias`는 아무런 효과가 없을 거라고 생각했다. 하지만 부가 효과가 있었다. 이 코드를 수행한 후에는 `target in NWORDS`가 항상 참이 되는 것이다. 원래는 정답 단어가 우리의 사전에 없는 경우에도 이 코드로 인해 우리가 항상 알고 있게 되었으므로, 코드가 반칙을 한 셈이다. 참으로 부끄러운 오류이다. `defaultdict`를 사용해서 프로그램을 간결하게 한 것은 좋았지만, 일반 `dict` 자료 구조를 대신 사용했다면 이런 일은 없었을 것이다.
 
-In conclusion, I met my goals for brevity, development time, and runtime speed, but not for accuracy.
+**2차 업데이트**: 또 다시 `defaultdict`의 습격이 있었다. 다리우스 베이컨이 `correct` 함수에서 내가 `NWORDS[w]`에 접근함으로써 `w`를 우리가 알고 있지 않은 경우에도 `defaultdict`에 추가하고 있다고 알려주었다. 따라서 두 번째로 접근할 때는 해당 단어가 있다고 인식하게 된다. 다리우스의 제안에 따라 `NWORDS.get` 을 사용하면 이 문제를 피해갈 수 있다. (이것이 동작하는 것은 `max(None, i)` 는 모든 정수 `i`에 대해 `i`이기 때문이다.)
 
-Future Work
+결과적으로 원래의 목표 중 단순함과 개발 시간, 수행 시간은 만족시킬 수 있었지만 정확도에 대해선 그러지 못했다.
 
-Let's think about how we could do better. (I've done some more in a separate chapter for a book.) We'll again look at all three factors of the probability model: (1) P(c); (2) P(w|c); and (3) argmaxc. We'll look at examples of what we got wrong. Then we'll look at some factors beyond the three...
-P(c), the language model. We can distinguish two sources of error in the language model. The more serious is unknown words. In the development set, there are 15 unknown words, or 5%, and in the final test set, 43 unknown words or 11%. Here are some examples of the output of spelltest with verbose=True:
-correct('economtric') => 'economic' (121); expected 'econometric' (1)
-correct('embaras') => 'embargo' (8); expected 'embarrass' (1)
-correct('colate') => 'coat' (173); expected 'collate' (1)
-correct('orentated') => 'orentated' (1); expected 'orientated' (1)
-correct('unequivocaly') => 'unequivocal' (2); expected 'unequivocally' (1)
-correct('generataed') => 'generate' (2); expected 'generated' (1)
-correct('guidlines') => 'guideline' (2); expected 'guidelines' (1)
-In this output we show the call to correct and the result (with the NWORDS count for the result in parentheses), and then the word expected by the test set (again with the count in parentheses). What this shows is that if you don't know that 'econometric' is a word, you're not going to be able to correct 'economtric'. We could mitigate by adding more text to the training corpus, but then we also add words that might turn out to be the wrong answer. Note the last four lines above are inflections of words that do appear in the dictionary in other forms. So we might want a model that says it is okay to add '-ed' to a verb or '-s' to a noun.
+## 추후 개선점
 
-The second potential source of error in the language model is bad probabilities: two words appear in the dictionary, but the wrong one appears more frequently. I must say that I couldn't find cases where this is the only fault; other problems seem much more serious.
+어떻게 해야 이 코드를 개선할 수 있을지 생각해 보자 (실제로 [이 책의 한 챕터](http://norvig.com/ngrams/)]에서 이 개선점들을 적용한 바 있다). 이 확률 모델의 세 부분 P(c)와 P(w|c), argmaxc 를 각각 살펴보도록 하자. 각 부분이 잘못 처리한 예제들을 우선 살펴보고, 그 외의 예제들도 살펴보자.
 
-We can simulate how much better we might do with a better language model by cheating on the tests: pretending that we have seen the correctly spelled word 1, 10, or more times. This simulates having more text (and just the right text) in the language model. The function spelltest has a parameter, bias, that does this. Here's what happens on the development and final test sets when we add more bias to the correctly-spelled words:
+첫 번째로는 언어 모델 P(c)를 살펴보자. 우리가 작성한 언어 모델에는 큰 오류의 원인이 두 개 있는데, 그 중 더 심각한 것은 알지 못하는 단어다. 개발용 테스트 셋에는 우리가 알지 못하는 단어가 15개로, 전체의 5%였다. 최종 테스트 셋에서는 43개로 11%나 되었다. `verbose=true`로 두고 `spelltest` 를 수행해 보면 다음과 같은 결과들을 볼 수 있다.
 
-Bias	Dev.	Test
-0	74%	67%
-1	74%	70%
-10	76%	73%
-100	82%	77%
-1000	89%	80%
+	#!python
+	correct('economtric') => 'economic' (121); expected 'econometric' (1)
+	correct('embaras') => 'embargo' (8); expected 'embarrass' (1)
+	correct('colate') => 'coat' (173); expected 'collate' (1)
+	correct('orentated') => 'orentated' (1); expected 'orientated' (1)
+	correct('unequivocaly') => 'unequivocal' (2); expected 'unequivocally' (1)
+	correct('generataed') => 'generate' (2); expected 'generated' (1)
+	correct('guidlines') => 'guideline' (2); expected 'guidelines' (1)
+
+이 출력은 `correct`의 입력과 결과(`NWORDS`에서 결과 단어가 몇 번이나 출현했는지와 함께), 그리고 테스트 셋에서 요구하는 정답과 정답의 출현 횟수를 보여준다. 이 예제에서 모든 정답들의 출현 횟수는 1로 되어 있고, 이것은 해당 단어를 원래 알지 못했다는 말이다. 우리 프로그램이 `econometric` 이라는 단어가 존재한다는 것을 아예 모른다면 해당 단어로 오타를 정정할 수 있을 리 없다. 물론 훈련용 코퍼스에 문서를 더 추가해서 이 문제를 해결할 수도 있겠지만, 후보가 많아진다는 이야기는 오답이 될 수 있는 후보가 늘어난다는 뜻이기도 하다. 위 예제의 뒤 네 개 예제는 사전에 이미 있는 단어의 변형임을 눈여겨 보자. 따라서 동사 뒤에 `-ed`를 붙이거나 명사 뒤에 `-s`를 붙이는 것도 괜찮다고 생각하는 언어 모델을 만들 수 있다.
+
+언어 모델에서 나타날 수 있는 두 번째 문제는 잘못된 확률값이다. 정답과 오답이 사전에 모두 출현하지만 오답이 더 많이 출현하는 경우다. 하지만 이 오류가 오답의 유일한 원인인 경우를 찾지는 못했다. 여기서 다루는 다른 요인들이 훨씬 큰 악영향을 미친다.
+
+더 많은 단어를 알거나, 모르는 단어들에 대해 더 잘 짐작할 수 있는 언어 모델이 있었다면 얼마나 잘 했을까를 짐작하기 위해 반칙을 조금 하도록 하자. 모든 경우에 우리가 정답 단어를 1번 혹은 10번은 본 적이 있다고 가정하는 것이다. 이것은 언어 모델에 우리가 문서를 적절히 추가하는 것과 같은 효과를 갖는다. `spelltest`의 입력 변수 `bias`를 사용하면 이와 같은 테스트를 할 수 있다. `bias`를 올릴 때 개발과 테스트 셋에서의 성능은 다음과 같이 변화한다.
+
+    Bias    Dev.    Test
+    0       74%     67%
+    1       74%     70%
+    10      76%     73%
+    100     82%     77%
+    1000    89%     80%
+
+두 테스트 셋 모두에서 훨씬 좋은 성적을 내며 결과적으로는 정확도가 80-90%까지 올라가는 것을 볼 수 있다. 따라서 더 좋은 언어 모델이 있다면 우리의 정확도 목표에 도달할 수도 있다는 결론을 얻을 수 있다. 물론 이것이 너무 낙관적인 결과일 수도 있다. 더 많은 단어를 아는 언어 모델을 만들다 보면 더 많은 오답 후보를 추가하게 되는데, 우리의 테스트에서는 그런 효과를 고려하지 않았기 때문이다.
+
+모르는 단어를 해결하는 다른 방법은 
+
 On both test sets we get significant gains, approaching 80-90%. This suggests that it is possible that if we had a good enough language model we might get to our accuracy goal. On the other hand, this is probably optimistic, because as we build a bigger language model we would also introduce words that are the wrong answer, which this method does not do.
 
 Another way to deal with unknown words is to allow the result of correct to be a word we have not seen. For example, if the input is "electroencephalographicallz", a good correction would be to change the final "z" to an "y", even though "electroencephalographically" is not in our dictionary. We could achieve this with a language model based on components of words: perhaps on syllables or suffixes (such as "-ally"), but it is far easier to base it on sequences of characters: 2-, 3- and 4-letter sequences.

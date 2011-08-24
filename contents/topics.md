@@ -3,6 +3,7 @@ Category: 42
 Title: 쓰고 싶은 토픽들?
 Status: draft
 
+* acing programming interviews
 * my vim setup
 * my static blogging setup
 * spelling corrector in Korean

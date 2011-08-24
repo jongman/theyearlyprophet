@@ -185,7 +185,7 @@ Status: draft
 
 어떻게 해야 이 코드를 개선할 수 있을지 생각해 보자 (실제로 [이 책의 한 챕터](http://norvig.com/ngrams/)]에서 이 개선점들을 적용한 바 있다). 이 확률 모델의 세 부분 P(c)와 P(w|c), argmaxc 를 각각 살펴보도록 하자. 각 부분이 잘못 처리한 예제들을 우선 살펴보고, 그 외의 예제들도 살펴보자.
 
-첫 번째로는 언어 모델 P(c)를 살펴보자. 우리가 작성한 언어 모델에는 큰 오류의 원인이 두 개 있는데, 그 중 더 심각한 것은 알지 못하는 단어다. 개발용 테스트 셋에는 우리가 알지 못하는 단어가 15개로, 전체의 5%였다. 최종 테스트 셋에서는 43개로 11%나 되었다. `verbose=true`로 두고 `spelltest` 를 수행해 보면 다음과 같은 결과들을 볼 수 있다.
+**첫 번째**로는 언어 모델 P(c)를 살펴보자. 우리가 작성한 언어 모델에는 큰 오류의 원인이 두 개 있는데, 그 중 더 심각한 것은 알지 못하는 단어다. 개발용 테스트 셋에는 우리가 알지 못하는 단어가 15개로, 전체의 5%였다. 최종 테스트 셋에서는 43개로 11%나 되었다. `verbose=true`로 두고 `spelltest` 를 수행해 보면 다음과 같은 결과들을 볼 수 있다.
 
 	#!python
 	correct('economtric') => 'economic' (121); expected 'econometric' (1)
@@ -226,7 +226,7 @@ Status: draft
 
 두 번째 예를 보면, 'adres'에서 'acres'로 가기 위해 d를 c로 바꾸는 연산 하나는 'd'를 'dd'로 만들고 's'를 'ss'로 만드는 두 연산보다 비용이 높았어야 할 것이다.
 
-두 번째로, 정답과 오답의 편집 거리가 같은 경우를 살펴보자.
+**두 번째**로, 정답과 오답의 편집 거리가 같은 경우를 살펴보자.
 
 	#!python
 	correct('thay') => 'that' (12513); expected 'they' (4939)
@@ -247,7 +247,7 @@ Status: draft
 	correct('forth') => 'forth' (83); expected 'fourth' (79)
 	correct('et') => 'et' (20); expected 'set' (325)
 
-세 번째로 모든 가능성을 검사하는 부분인 argmaxc 를 살펴보자. 우리 프로그램은 원문과 편집 거리 2 이하인 후보들을 모두 생성한다. 실제로 개발 셋에서는 270개 중 3개만이 원문과 편집 거리 2가 넘게 떨어져 있었지만, 최종 테스트 셋에서는 400개 중 23개나 있다. 다음이 그 목록이다.
+**세 번째**로 모든 가능성을 검사하는 부분인 argmaxc 를 살펴보자. 우리 프로그램은 원문과 편집 거리 2 이하인 후보들을 모두 생성한다. 실제로 개발 셋에서는 270개 중 3개만이 원문과 편집 거리 2가 넘게 떨어져 있었지만, 최종 테스트 셋에서는 400개 중 23개나 있다. 다음이 그 목록이다.
 
 	purple perpul
 	curtains courtens
@@ -278,7 +278,7 @@ Status: draft
 
 일부 연산을 이용해 편집 거리 3인 후보들을 만들 수 있도록 함으로써 이 문제를 해결할 수도 있다. 예를 들어 편집 거리 3인 후보들을 만들 때는 모음 옆에 모음을 삽입하거나, 모음을 교체하거나, 'c'를 's'로 바꾸는 등의 그럴 듯한 연산만을 허용하는 것이다. 그러면 이 케이스들을 대부분 처리할 수 있을 것이다.
 
-마지막으로, 정확도를 올리기 위한 이들보다 더 좋은 방법이 있다. `correct`가 단어 하나만을 입력받는 것이 아니라, 더 많은 문맥에 대한 정보를 받아들일 수 있도록 하는 것이다. 많은 경우 단어 하나만을 가지고는 어느 것이 정답이어야 할지 알기 힘들다. 오타로 입력된 원문이 사전에 이미 존재하는 경우가 좋은 예이다.
+**네 번째**로 정확도를 올리기 위한 이들보다 더 좋은 방법이 있다. `correct`가 단어 하나만을 입력받는 것이 아니라, 더 많은 문맥에 대한 정보를 받아들일 수 있도록 하는 것이다. 많은 경우 단어 하나만을 가지고는 어느 것이 정답이어야 할지 알기 힘들다. 오타로 입력된 원문이 사전에 이미 존재하는 경우가 좋은 예이다.
 
 	#!python
 	correct('where') => 'where' (123); expected 'were' (452)
@@ -296,78 +296,77 @@ Status: draft
 	correct('natior') => 'nation' (170); expected 'nature' (171)
 	correct('thear') => 'their' (3956); expected 'there' (4973)
 	correct('carrers') => 'carriers' (7); expected 'careers' (2)
-	
-Why should 'thear' be corrected as 'there' rather than 'their'? It is difficult to tell by the single word alone, but if the query were correct('There's no there thear') it would be clear.
 
-To build a model that looks at multiple words at a time, we will need a lot of data. Fortunately, Google has released a database of word counts for all sequences up to five words long, gathered from a corpus of a trillion words.
+'thear'만 보고 이것이 'there'가 되어야 할 지, 'their'가 되어야 할 지 알 수 있을까? 단어 하나만 보고는 어렵지만, 애초에 입력이 `correct("There's no there thear")` 였으면 훨씬 알아보기 쉬웠을 것이다.
 
-I believe that a spelling corrector that scores 90% accuracy will need to use the context of the surrounding words to make a choice. But we'll leave that for another day...
+단어 여러개를 입력 받는 모델을 만들기 위해서는 역시 엄청나게 많은 자료가 필요하다. 다행히도 구글이 대략 1조 단어 분량의 문서에서 최대 5개까지의 인접한 단어 목록에 대해 각 목록이 출현한 회수를 모은 자료를 [공개한 바 있다](http://googleresearch.blogspot.com/2006/08/all-our-n-gram-are-belong-to-you.html).
 
-We could improve our accuracy scores by improving the training data and the test data. We grabbed a million words of text and assumed they were all spelled correctly; but it is very likely that the training data contains several errors. We could try to identify and fix those. Less daunting a task is to fix the test sets. I noticed at least three cases where the test set says our program got the wrong answer, but I believe the program's answer is better than the expected answer:
-correct('aranging') => 'arranging' (20); expected 'arrangeing' (1)
-correct('sumarys') => 'summary' (17); expected 'summarys' (1)
-correct('aurgument') => 'argument' (33); expected 'auguments' (1)
-We could also decide what dialect we are trying to train for. The following three errors are due to confusion about American versus British spelling (our training data contains both):
+90% 정도의 정확도를 달성하기 위해서는 인접한 단어를 항상 고려해야 할 것이라는 것이 내 생각이다. 하지만 그건 먼 미래를 위해 남겨두자.
 
-correct('humor') => 'humor' (17); expected 'humour' (5)
-correct('oranisation') => 'organisation' (8); expected 'organization' (43)
-correct('oranised') => 'organised' (11); expected 'organized' (70)
-Finally, we could improve the implementation by making it much faster, without changing the results. We could re-implement in a compiled language rather than an interpreted one. We could have a lookup table that is specialized to strings rather than Python's general-purpose dict. We could cache the results of computations so that we don't have to repeat them multiple times. One word of advice: before attempting any speed optimizations, profile carefully to see where the time is actually going.
-Further Reading
+**다섯 번째**로, 훈련용 데이터를 개선하는 방법이 있다. 훈련용 데이터를 위해 우리는 대략 백만 개의 단어를 모으고 이들의 철자법은 항상 옳다고 가정했다. 하지만 훈련용 데이터가 오타를 포함할 가능성도 분명히 있다. 이들을 찾아 교정하는 것도 정확도를 올리기 위한 방법이 될 수 있다. 물론 백만 단어 분량의 훈련용 데이터를 교정하기란 쉽지 않다. 대신 테스트 셋에 있는 오류를 교정해서 정확도를 올릴 수도 있다. 실제로 나는 오답으로 분류되었지만 우리 프로그램이 제안한 답이 테스트 셋의 정답보다 나은 경우들도 찾아냈다.
 
-Roger Mitton has a survey article on spell checking.
-Jurafsky and Martin cover spelling correction well in their text Speech and Language Processing.
-Manning and Schutze cover statistical language models very well in their text Foundations of Statistical Natural Language Processing, but they don't seem to cover spelling (at least it is not in the index).
-The aspell project has a lot of interesting material, including some test data that seems better than what I used.
-The LingPipe project has a spelling tutorial.
-Errata
+	#!python
+	correct('aranging') => 'arranging' (20); expected 'arrangeing' (1)
+	correct('sumarys') => 'summary' (17); expected 'summarys' (1)
+	correct('aurgument') => 'argument' (33); expected 'auguments' (1)
 
-Originally my program was 20 lines, but Ivan Peev pointed out that I had used string.lowercase, which in some locales in some versions of Python, has more characters than just the a-z I intended. So I added the variable alphabet to make sure. I could have used string.ascii_lowercase.
-Thanks to Jay Liang for pointing out there are only 54n+25 distance 1 edits, not 55n+25 as I originally wrote.
+그리고 어떤 dialect (딱히 번역할 말이 없어서 원문을 썼다) 에 대해 훈련을 할지도 결정할 수도 있다. 예를 들어 다음 세 개의 오류는 미국식 영어와 영국식 영어의 차이 때문에 발생했다 (우리의 훈련용 데이터는 두 가지 모두를 포함하고 있다).
 
-Thanks to Dmitriy Ryaboy for pointing out there was a problem with unknown words; this allowed me to find the NWORDS[target] += bias bug.
+	#!python
+	correct('humor') => 'humor' (17); expected 'humour' (5)
+	correct('oranisation') => 'organisation' (8); expected 'organization' (43)
+	correct('oranised') => 'organised' (11); expected 'organized' (70)
 
-Other Computer Languages
+**마지막**으로, 결과는 그대로 두고 프로그램을 훨씬 빠르게 최적화할 수도 있다. 인터프리터 언어 대신 컴파일되는 언어를 사용하는 방법이 가장 간단한 방법일 것이다. 어떤 자료형에 대해서도 사용할 수 있는 파이썬의 `dict` 대신 문자열에 최적화된 자료형을 사용하는 것도 한 가지 방법이다. 계산 결과를 캐싱함으로써 여러번 반복하지 않을 수도 있다. 단 한 가지 조언이 있다면, 실제 최적화를 구현하기 전에 항상 어디에서 시간이 가장 많이 소모되는지를 살펴 보라.
 
-After I posted this article, various people wrote versions in different programming languages. While the purpose of this article was to show the algorithms, not to highlight Python, the other examples may be interesting for those who like comparing languages, or for those who want to borrow an implementation in their desired language:
-Language	Lines
-Code	Author
-(and link to implementation)
-Awk	15	Tiago "PacMan" Peczenyj
-Awk	28	Gregory Grefenstette
-C	184	Marcelo Toledo
-C++	98	Felipe Farinon
-C#	43	Lorenzo Stoakes
-C#	69	Frederic Torres
-Clojure	18	Rich Hickey
-D	23	Leonardo M
-Erlang	87	Federico Feroldi
-F#	16	Dejan Jelovic
-F#	34	Sebastian G
-Groovy	22	Rael Cunha
-Haskell	24	Grzegorz
-Java	35	Rael Cunha
-Java	372	Dominik Schulz
-Javascript	53	Panagiotis Astithas
-Lisp	26	Mikael Jansson
-Perl	63	riffraff
-PHP	68	Felipe Ribeiro
-PHP	103	Joe Sanders
-Python	21	Peter Norvig
-Rebol	133	Cyphre
-Ruby	34	Brian Adkins
-Scala	23	Thomas Jung
-Scheme	45	Shiro
-Scheme	89	Jens Axel
-Other Natural Languages
+## 더 읽을 거리
 
-This essay has been translated into:
-Simplified Chinese by Eric You XU
-Japanese by Yasushi Aoki
-Russian by Petrov Alexander
-40 languages by Google Translate:
+* 로저 미튼의 철자 교정에 대한 [서베이](http://www.dcs.bbk.ac.uk/~roger/spellchecking.html)
+* Jurafsky 와 Martin 의 교과서인 [Speech and Language Processing](http://www.cs.colorado.edu/~martin/slp.html)에는 철자 교정에 관련된 내용이 잘 나와 있다.
+* Manning 과 Schutze 의 교과서인 [Foundations of Statistical Natural Language Processing](http://nlp.stanford.edu/fsnlp/)에는 통계적 자연어 처리에 관한 내용이 잘 나와 있지만, 철자 교정에 관한 내용은 없는 것 같다 (최소한 찾아보기에는 없었다).
+* 오픈 소스 철자법 교정기인 [aspell](http://aspell.net/)에는 꽤 재미있는 자료가 많은데, 내가 사용한 것보다 나아 보이는 [테스트 데이터](http://aspell.net/test/) 도 있다.
+* [LingPipe](http://alias-i.com/lingpipe) 프로젝트에는 이를 철자법 교정을 위해 사용하기 위한 [튜토리얼](http://alias-i.com/lingpipe/demos/tutorial/querySpellChecker/read-me.html) 이 있다.
 
-	Gadgets powered by Google
-Thanks to all the authors for creating these implementations and translations.
+## 오류
 
-Peter Norvig
+원래 내 프로그램은 20줄이었지만, Ivan Peev가 내가 사용하고 있던 `string.lowercase`는 로케일과 파이썬 버전에 따라 a-z 외에 다른 글자를 저장할 수도 있다고 알려주었다. 때문에 `alphabet` 변수를 추가해서 21줄이 되었다. `string.ascii_lowercase` 를 쓸 수도 있었다.
+
+편집 거리 1인 후보의 개수가 내가 생각했던 55n+25개가 아니라 54n+25개임을 알려준 Jay Liang에게 감사한다.
+
+훈련용 데이터에 없던 단어들에 관련된 문제가 있음을 알려준 Dmitriy Ryaboy에게 감사한다. 덕분에 `NWORDS[target] += bias` 의 버그를 찾을 수 있었다.
+
+## 다른 구현
+
+내가 이 글을 올린 이후 다른 많은 사람들이 다른 프로그래밍 언어로 이 철자법 교정기를 구현하였다. 이 글의 목적은 파이썬을 홍보하는 것이 아니라 알고리즘을 보여주는 것이었지만, 언어를 비교하거나 특정 언어로 된 구현을 원하는 사람에게는 다음 목록이 유용할 것 같다.
+
+<table border=1> 
+<tr><th>언어<th>코드 줄수<th>작성자 및 구현 링크
+<tr><td>Awk<td>15<td><a href="http://pacman.blog.br/wiki/index.php?title=Um_Corretor_Ortogr%C3%A1fico_em_GAWK">Tiago "PacMan" Peczenyj</a> 
+<tr><td>Awk<td>28<td><a href="http://feedback.exalead.com/feedbacks/191466-spell-checking">Gregory Grefenstette</a> 
+<tr><td>C<td>184<td><a href="http://blog.marcelotoledo.org/2007/08/10/how-to-write-a-spelling-corrector/">Marcelo Toledo</a> 
+<tr><td>C++<td>98<td><a href="http://scarvenger.wordpress.com/2007/12/11/how-to-write-a-spelling-corrector/">Felipe Farinon</a> 
+<tr><td>C#<td>43<td><a href="http://www.codegrunt.co.uk/?page=cSharp#norvigSpell">Lorenzo Stoakes</a> 
+<tr><td>C#<td>69<td><a href="http://frederictorres.blogspot.com/2011/04/how-to-write-spelling-corrector-from.html">Frederic Torres</a> 
+<tr><td>Clojure<td>18<td><a href="http://en.wikibooks.org/wiki/Clojure_Programming/Examples#Norvig.27s_Spelling_Corrector">Rich Hickey</a> 
+<tr><td>D<td>23<td><a href="http://leonardo-m.livejournal.com/59589.html">Leonardo M</a> 
+<tr><td>Erlang<td>87<td><a href="http://www.pixzone.com/blog/223/spell-corrector-aka-google-suggest-in-erlang-first-part/">Federico Feroldi</a> 
+<tr><td>F#<td>16<td><a href="http://www.jelovic.com/weblog/?p=201">Dejan Jelovic</a> 
+<tr><td>F#<td>34<td><a href="http://cs.hubfs.net/forums/thread/3085.aspx">Sebastian G</a> 
+<tr><td>Groovy<td>22<td><a href="http://raelcunha.com/spell-correct.php#groovy">Rael Cunha</a> 
+<tr><td>Haskell<td>24<td><a href="http://pithekos.net/brainwave/">Grzegorz</a> 
+<tr><td>Java<td>35<td><a href="http://raelcunha.com/spell-correct.php">Rael Cunha</a> 
+<tr><td>Java<td>372<td><a href="http://developer.gauner.org/jspellcorrect/">Dominik Schulz</a> 
+<tr><td>Javascript<td>53<td><a href="http://astithas.blogspot.com/2009/08/spell-checking-in-javascript.html">Panagiotis Astithas</a> 
+<tr><td>Lisp<td>26<td><a href="https://github.com/mikaelj/snippets/blob/master/lisp/spellcheck/spellcheck.lisp">Mikael Jansson</a> 
+<tr><td>Perl<td>63<td><a href="http://www.riffraff.info/2007/5/20/a-spell-corrector-in-perl6-part-3">riffraff</a> 
+<tr><td>PHP<td>68<td><a href="http://www.phpclasses.org/browse/package/4859.html">Felipe Ribeiro</a> 
+<tr><td>PHP<td>103<td><a href="http://soundofemotion.com/spellcorrect.txt">Joe Sanders</a> 
+<tr><td>Python<td>21<td>Peter Norvig
+<tr><td>Rebol<td>133<td><a href="http://www.rebol.cz/~cyphre/spell.r">Cyphre</a> 
+<tr><td>Ruby<td>34<td><a href="http://lojic.com/blog/2008/09/04/how-to-write-a-spelling-corrector-in-ruby/">Brian Adkins</a> 
+<tr><td>Scala<td>23<td><a href="http://theyougen.blogspot.com/2009/12/peter-norvigs-spelling-corrector-in.html">Thomas Jung</a> 
+<tr><td>Scheme<td>45<td><a href="http://practical-scheme.net/wiliki/wiliki.cgi?Gauche%3aSpellingCorrection&amp;l=en">Shiro</a> 
+<tr><td>Scheme<td>89<td><a href="http://scheme.dk/blog/2007/04/writing-spelling-corrector-in-plt.html">Jens Axel</a> 
+</table> 
+
+[피터 노빅](http://norvig.com/)

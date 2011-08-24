@@ -4,7 +4,9 @@ Title: 번역: 맞춤법 검사기 작성하기
 Date: 2011-08-20
 Status: draft
 
-블로그 개장 기념으로 역시 내가 좋아하는 또다른 에세이 중 하나인 [Peter Norvig](http://norvig.com/)의 [How to Write a Spelling Corrector](http://norvig.com/spell-correct.html)를 번역해 보았다. 영문을 대상으로 한 맞춤법 검사기라서 국문에 그대로 적용할 수는 없지만, 맞춤법 검사기에 필요한 이론을 잘 설명하고 있고 코드가 간결하므로 꽤나 흥미롭게 읽을 수 있다.
+블로그 개장 기념으로 역시 내가 좋아하는 또다른 에세이 중 하나인 [Peter Norvig](http://norvig.com/)의 [How to Write a Spelling Corrector](http://norvig.com/spell-correct.html)를 번역해 보았다. 영문을 대상으로 한 맞춤법 검사기라서 국문에 그대로 적용할 수는 없지만, 굉장히 흥미롭게 읽을 수 있다.
+
+나는 이 글이 정말 굉장히 좋은 글이라고 생각하는데, 단순히 이론을 잘 설명하고 있으며, 코드가 간결하고 우아하다는 표면적인 이유 외에도 딱히 정답이 없는 문제에 접근하기 위한 사고 과정을 잘 설명하고 있다는 것이다. 가장 단순한 방법에서 시작해서 어떻게 이것을 개선하면 좋을지에 대해서도 잘 설명하고 있다. 이와 같은 이야기를 우리 시대의 가장 [위대한 인공지능 연구자 중 하나](http://norvig.com/bio.html)에게서 직접 들을 기회란 흔치 않다.
 
 번역상의 오탈자는 [번역자](mailto:theyearlyprophet@gmail.com) 에게 신고 바란다.
 
@@ -12,7 +14,7 @@ Status: draft
 
 지난 주에 나는 구글이 검색어의 맞춤법을 그렇게 빠르고 정확하게 교정하는 것이 놀랍다는 말을 두 명의 친구들(딘과 빌)로부터 각각 들었다. 실제로 구글에 [마춤법](http://www.google.com/search?sourceid=chrome&ie=UTF-8&q=%EB%A7%88%EC%B6%A4%EB%B2%95)이라고 검색해 보면 대략 0.1초 안에 *이것을 찾으셨나요? [맞춤법](http://www.google.co.kr/#hl=ko&newwindow=1&sa=X&ei=qD5QTrCSDunk0QG5rPCCBw&ved=0CCoQBSgA&q=%EB%A7%9E%EC%B6%A4%EB%B2%95&spell=1&bav=on.2,or.r_gc.r_pw.&fp=c16bbd82e235a9c3&biw=837&bih=1080)* 같은 결과를 받게 된다. (야후나 마이크로소프트의 검색 결과도 다르지 않다.) 사실 나는 그런 말을 들어서 놀랐다. 굉장히 유능한 엔지니어이자 수학자인 딘과 빌 같은 사람들은 맞춤법 교정과 같은 통계적 언어 처리에 대해서는 충분히 잘 알 것이라고 생각했기 때문이다. 하지만 그들이 이런 주제에 대해 딱히 알아야 할 이유는 없다: 그들의 지식이 문제가 아니라 내 생각이 문제인 셈이다.
 
-두 친구들 외에도 많은 사람들에게 도움이 되기를 바라며 맞춤법 검사기의 동작 과정에 대해 설명해 보겠다. 물론 실제 서비스에 사용되는 철자법 검사기의 내부는 여기에서 전부 다루기에는 너무 복잡하다([여기](http://static.googleusercontent.com/external_content/untrusted_dlcp/research.google.com/en/us/pubs/archive/36180.pdf)와 [여기](http://citeseerx.ist.psu.edu/viewdoc/download;jsessionid=52A3B869596656C9DA285DCE83A0339F?doi=10.1.1.146.4390&rep=rep1&type=pdf)에 관련된 자료가 좀 있다). 그러니 이 글에서는 그 원리를 이해하는 데 도움이 될 만한 간단하고 짧은 철자법 검사기의 동작 원리를 우선 설명해 보겠다. 이 철자법 검사기는 코드가 한 페이지도 안 될 정도로 아주 짧고, 80퍼센트에서 90퍼센트의 정확률을 보이며 초당 최소 10단어 정도는 처리할 수 있다.
+두 친구들 외에도 많은 사람들에게 도움이 되기를 바라며 맞춤법 검사기의 동작 과정에 대해 설명해 보겠다. 물론 실제 서비스에 사용되는 철자법 검사기의 내부는 여기에서 전부 다루기에는 너무 복잡하다([여기](http://static.googleusercontent.com/external_content/untrusted_dlcp/research.google.com/en/us/pubs/archive/36180.pdf)와 [여기](http://citeseerx.ist.psu.edu/viewdoc/download;jsessionid=52A3B869596656C9DA285DCE83A0339F?doi=10.1.1.146.4390&rep=rep1&type=pdf)에 관련된 자료가 좀 있다). 그러니 이 글에서는 그 원리를 이해하는 데 도움이 될 만한 간단하고 짧은 철자법 검사기를 하나 작성해 보려고 한다. 나의 목표는 한 페이지 안에 들어갈 정도로 짧으면서, 80퍼센트에서 90퍼센트의 정확률을 보이고 초당 최소 10단어 정도는 처리하는 구현을 만드는 것이다.
 
 다음 21줄의 [파이썬](http://python.org/) 2.5 코드로 완전한 맞춤법 검사기를 구현할 수 있다.
 

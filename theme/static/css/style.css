@@ -248,6 +248,13 @@ section#navigation nav ul li {
 	margin: 0px 8px;
 }
 
+/* disqus */
+.dsq-combo-box, #dsq-combo-tabs li {
+	border-radius: 8px;
+	-moz-border-radius: 8px;
+	-webkit-border-radius: 8px;
+
+}
 
 /* ==|== non-semantic helper classes ========================================
    Please define your styles before this section.

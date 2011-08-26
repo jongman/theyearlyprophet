@@ -3,6 +3,7 @@ Category: 42
 Title: 쓰고 싶은 토픽들?
 Status: draft
 
+* Let's build a compiler! 파이썬으로 구현해보기
 * Elastic MapReduce 사용하기 + MrJob
 * gdb+python
 * 오픈소스만 쓰고 살기

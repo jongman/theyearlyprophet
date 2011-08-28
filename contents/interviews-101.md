@@ -1,6 +1,6 @@
-Slug: interviews-101
+Slug: interviews-101-preparation
 Category: 42
-Title: 알고리즘 인터뷰 정복하기
+Title: 알고리즘 인터뷰 가이드 1: 준비편
 Date: 2011-08-26
 Status: draft
 
